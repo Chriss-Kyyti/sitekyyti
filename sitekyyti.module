@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Site wide modification to Kyyti site.
+ *
+ * Last modified: 23.07.2012 Mika Hatakka
+ */
+
+function sitekyyti_form_article_node_form_alter(&$form, $form_state) {
+  $form['language']['#weight'] = '50';
+  $form['scheduler_settings']['#weight'] = '-10';
+//  dpm($form);
+}
+
+function sitekyyti_form_tapahtuma_node_form_alter(&$form, $form_state) {
+//  $form['scheduler_settings']['#collapsed'] = TRUE;
+  $form['scheduler_settings']['#weight'] = '-10';
+//  dpm($form);
+}

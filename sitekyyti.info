@@ -1,0 +1,5 @@
+name = Site Kyyti
+description = Custom function for Kyyti site.
+core = 7.x
+
+files[] = sitekyyti.module
