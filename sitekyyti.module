@@ -1,18 +1,41 @@
 <?php
-
 /**
  * @file
  * Site wide modification to Kyyti site.
  *
- * Last modified: 28.11.2012 Mika Hatakka
+ * Last modified: 30.11.2012 Mika Hatakka
  */
 
+/**
+ * Implemtents hook_menu().
+ */
+function sitekyyti_menu() {
+  $items = array();
+  
+  $items['admin/config/system/kyyti'] = array(
+    'title' => 'Kyyti site settings',
+    'description' => 'Kyyti site specific settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sitekyyti_admin'),
+    'access arguments' => array('administer site configuration '),
+    'file' => 'sitekyyti.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_article_node_form_alter().
+ */
 function sitekyyti_form_article_node_form_alter(&$form, $form_state) {
   $form['language']['#weight'] = '50';
   $form['scheduler_settings']['#weight'] = '-10';
 //  dpm($form);
 }
 
+/**
+ * Implements hook_form_tapahtuma_node_form_alter().
+ */
 function sitekyyti_form_tapahtuma_node_form_alter(&$form, $form_state) {
   $form['language']['#weight'] = '50';
 //  $form['scheduler_settings']['#collapsed'] = TRUE;
@@ -20,6 +43,18 @@ function sitekyyti_form_tapahtuma_node_form_alter(&$form, $form_state) {
 //  dpm($form);
 }
 
+/**
+ * Implements hook_form_vinkki_node_form_alter().
+ */
 function sitekyyti_form_vinkki_node_form_alter(&$form, $form_state) {
   $form['language']['#weight'] = '50';
+}
+
+/**
+ * Implements hook_pathauto_alias_alter().
+ */
+function sitekyyti_pathauto_alias_alter(&$alias, array &$context) {
+  if(variable_get('kyyti_node_path_lang', 0) != 0) {
+    $context['language'] = LANGUAGE_NONE;
+  } 
 }
