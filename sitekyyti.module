@@ -3,7 +3,7 @@
  * @file
  * Site wide modification to Kyyti site.
  *
- * Last modified: 30.11.2012 Mika Hatakka
+ * Last modified: 17.12.2012 Mika Hatakka
  */
 
 /**
@@ -58,3 +58,16 @@ function sitekyyti_pathauto_alias_alter(&$alias, array &$context) {
     $context['language'] = LANGUAGE_NONE;
   } 
 }
+
+//function sitekyyti_views_pre_view(&$view, &$display_id, &$args) {
+//  if($display_id == 'page') {
+//    if(isset($view->args[0])) {
+//      $view->args[0] = str_replace('-', ' ', $view->args[0]);
+//    }
+//  }
+//}
+
+//function sitekyyti_views_query_alter(&$view, &$query) {
+//  dpm($view);
+//  dpm($query);
+//}
