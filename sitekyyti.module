@@ -1,9 +1,10 @@
 <?php
+
 /**
  * @file
  * Site wide modification to Kyyti site.
  *
- * Last modified: 17.12.2012 Mika Hatakka
+ * Last modified: 01.03.2012 Mika Hatakka
  */
 
 /**
@@ -11,9 +12,9 @@
  */
 function sitekyyti_menu() {
   $items = array();
-  
+
   $items['admin/config/system/kyyti'] = array(
-    'title' => 'Kyyti site settings',
+    'title' => 'Kyyti site',
     'description' => 'Kyyti site specific settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('sitekyyti_admin'),
@@ -25,49 +26,59 @@ function sitekyyti_menu() {
 }
 
 /**
+ * Implements hook_form_node_form_alter().
+ * Drop language selection at the bottom and
+ * select used language from current user's language.
+ */
+function sitekyyti_form_node_form_alter(&$form) {
+  if (isset($form['language'])) {
+    // We must check that follwing are done only when adding new content.
+    if (empty($form['nid']['#value'])) {
+      global $language;
+      $form['language']['#default_value'] = $language->language;
+      $form['#node']->language = $language->language;
+    }
+    $form['language']['#weight'] = '50';
+  }
+}
+
+/**
  * Implements hook_form_article_node_form_alter().
  */
-function sitekyyti_form_article_node_form_alter(&$form, $form_state) {
-  $form['language']['#weight'] = '50';
+function sitekyyti_form_article_node_form_alter(&$form) {
   $form['scheduler_settings']['#weight'] = '-10';
-//  dpm($form);
 }
 
 /**
  * Implements hook_form_tapahtuma_node_form_alter().
  */
-function sitekyyti_form_tapahtuma_node_form_alter(&$form, $form_state) {
-  $form['language']['#weight'] = '50';
-//  $form['scheduler_settings']['#collapsed'] = TRUE;
+function sitekyyti_form_tapahtuma_node_form_alter(&$form) {
   $form['scheduler_settings']['#weight'] = '-10';
-//  dpm($form);
 }
 
-/**
- * Implements hook_form_vinkki_node_form_alter().
- */
-function sitekyyti_form_vinkki_node_form_alter(&$form, $form_state) {
-  $form['language']['#weight'] = '50';
-}
-
-/**
- * Implements hook_pathauto_alias_alter().
- */
-function sitekyyti_pathauto_alias_alter(&$alias, array &$context) {
-  if(variable_get('kyyti_node_path_lang', 0) != 0) {
-    $context['language'] = LANGUAGE_NONE;
-  } 
-}
-
-//function sitekyyti_views_pre_view(&$view, &$display_id, &$args) {
-//  if($display_id == 'page') {
-//    if(isset($view->args[0])) {
-//      $view->args[0] = str_replace('-', ' ', $view->args[0]);
-//    }
+//function sitekyyti_form_alter(&$form) {
+//  if (isset($form['language'])) {
+//    $form['language']['#weight'] = '50';
 //  }
 //}
 
-//function sitekyyti_views_query_alter(&$view, &$query) {
-//  dpm($view);
-//  dpm($query);
+//function sitekyyti_module_implements_alter(&$implementations, $hook) {
+//  if ($hook == 'form_alter') {
+//    // Move mymodule_form_alter() to the end of the list. module_implements()
+//    // iterates through $implementations with a foreach loop which PHP iterates
+//    // in the order that the items were added, so to move an item to the end of
+//    // the array, we remove it and then add it.
+//    if(isset($implementations['sitekyyti'])) {
+//      $group = $implementations['sitekyyti'];
+//      unset($implementations['sitekyyti']);
+//      $implementations['sitekyyti'] = $group;
+//    }
+//  }  
 //}
+
+function sitekyyti_process_page(&$variables) {
+  if (drupal_is_front_page() && variable_get('kyyti_hide_firstpage_content', FALSE)) {
+    $variables['title'] = '';
+    $variables['page']['content']['system_main']['default_message'] = '';
+  }
+}
