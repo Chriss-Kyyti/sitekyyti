@@ -4,7 +4,7 @@
  * @file
  * Site wide modification to Kyyti site.
  *
- * Last modified: 01.03.2012 Mika Hatakka
+ * Last modified: 05.03.2012 Mika Hatakka
  */
 
 /**
@@ -38,7 +38,7 @@ function sitekyyti_form_node_form_alter(&$form) {
       $form['language']['#default_value'] = $language->language;
       $form['#node']->language = $language->language;
     }
-    $form['language']['#weight'] = '50';
+//    $form['language']['#weight'] = '50';
   }
 }
 
@@ -79,6 +79,13 @@ function sitekyyti_form_tapahtuma_node_form_alter(&$form) {
 function sitekyyti_process_page(&$variables) {
   if (drupal_is_front_page() && variable_get('kyyti_hide_firstpage_content', FALSE)) {
     $variables['title'] = '';
-    $variables['page']['content']['system_main']['default_message'] = '';
+    if (isset($variables['page']['content']['system_main']['default_message'])) {
+      // Bartik
+      $variables['page']['content']['system_main']['default_message'] = '';
+    }
+    elseif (isset($variables['page']['content']['content']['content']['system_main']['default_message'])) {
+      // Omega
+      $variables['page']['content']['content']['content']['system_main']['default_message'] = '';
+    }
   }
 }
