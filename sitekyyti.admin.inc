@@ -3,7 +3,7 @@
  * @file
  * Kyyti site admin settings.
  *
- * Last modified: 01.03.2013 Mika Hatakka
+ * Last modified: 11.03.2013 Mika Hatakka
  */
 
 /**
@@ -19,6 +19,22 @@ function sitekyyti_admin() {
     '#type' => 'checkbox',
     '#default_value' => variable_get('kyyti_hide_firstpage_content', 0),
   );
+  
+  $form['kyyti_cul_add'] = array(
+    '#title' => t('Language of a new node.'),
+    '#description' => 'Select node language for new nodes.',
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('kyyti_cul_add', 0),
+  );
+  
+//  $form['kyyti_event_cal_date'] = array(
+//    '#title' => t('Event calendar date.'),
+//    '#description' => 'Select to show past dates below todays data.',
+//    '#type' => 'checkbox',
+//    '#default_value' => variable_get('kyyti_event_cal_date', 0),
+//  );
+  
+  
 // If need to do per content type settings  
 //  $node_info = entity_get_info('node');
 //  $node_types = array();

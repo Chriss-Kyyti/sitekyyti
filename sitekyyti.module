@@ -4,7 +4,7 @@
  * @file
  * Site wide modification to Kyyti site.
  *
- * Last modified: 05.03.2012 Mika Hatakka
+ * Last modified: 11.03.2012 Mika Hatakka
  */
 
 /**
@@ -31,14 +31,13 @@ function sitekyyti_menu() {
  * select used language from current user's language.
  */
 function sitekyyti_form_node_form_alter(&$form) {
-  if (isset($form['language'])) {
+  if (isset($form['language']) && variable_get('kyyti_cul_add', FALSE)) {
     // We must check that follwing are done only when adding new content.
     if (empty($form['nid']['#value'])) {
       global $language;
       $form['language']['#default_value'] = $language->language;
       $form['#node']->language = $language->language;
     }
-//    $form['language']['#weight'] = '50';
   }
 }
 
@@ -56,26 +55,9 @@ function sitekyyti_form_tapahtuma_node_form_alter(&$form) {
   $form['scheduler_settings']['#weight'] = '-10';
 }
 
-//function sitekyyti_form_alter(&$form) {
-//  if (isset($form['language'])) {
-//    $form['language']['#weight'] = '50';
-//  }
-//}
-
-//function sitekyyti_module_implements_alter(&$implementations, $hook) {
-//  if ($hook == 'form_alter') {
-//    // Move mymodule_form_alter() to the end of the list. module_implements()
-//    // iterates through $implementations with a foreach loop which PHP iterates
-//    // in the order that the items were added, so to move an item to the end of
-//    // the array, we remove it and then add it.
-//    if(isset($implementations['sitekyyti'])) {
-//      $group = $implementations['sitekyyti'];
-//      unset($implementations['sitekyyti']);
-//      $implementations['sitekyyti'] = $group;
-//    }
-//  }  
-//}
-
+/**
+ * Hide Title and Content from first page.
+ */
 function sitekyyti_process_page(&$variables) {
   if (drupal_is_front_page() && variable_get('kyyti_hide_firstpage_content', FALSE)) {
     $variables['title'] = '';
@@ -88,4 +70,96 @@ function sitekyyti_process_page(&$variables) {
       $variables['page']['content']['content']['content']['system_main']['default_message'] = '';
     }
   }
+}
+
+//***************************************************
+// Date handling for Kyyti first page event calendar.
+// Converts long period events starting date today
+// date to show in listing.
+//
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function sitekyyti_field_formatter_info() {
+  return array(
+    'kyyti_event_cal' => array(
+      'label' => t('Kyyti Event calandar'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'settings' => array(
+        'format_type' => 'long',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function sitekyyti_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+  
+  if($display['type'] == 'kyyti_event_cal') {
+    foreach ($items as $delta=>$item) {
+//      module_load_include('inc', 'date', 'date_admin');
+      $format = date_format_type_format($settings['format_type']);
+      $ev_date = strtotime($item['value']);
+      if ($ev_date < time()) {
+        $ev_date = strtotime(date('Y-m-d') . " 00:00:00");
+      }
+      $element[$delta] = array(
+        '#markup' => t('!date', array(
+          '!date' => date($format, $ev_date)
+        ))
+      );
+    }
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function sitekyyti_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $form = array();
+
+  if ($display['type'] == 'kyyti_event_cal') {
+    module_load_include('inc', 'date', 'date_admin');
+    $form['format_type'] = array(
+      '#title' => t('Choose how users view dates and times:'),
+      '#type' => 'select',
+      '#options' => date_format_type_options(),
+      '#default_value' => $settings['format_type'],
+      '#description' => t('To add or edit options, visit <a href="@date-time-page">Date and time settings</a>.', array('@date-time-page' => url('admin/config/regional/date-time'))),
+      '#weight' => 0,
+    );
+  }
+
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'view_mode' => $view_mode,
+  );
+  drupal_alter('date_field_formatter_settings_form', $form, $form_state, $context);
+  return $form;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function sitekyyti_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = '';
+
+  if ($display['type'] == 'kyyti_event_cal') {
+    $summary = t('Show dates using the format: @format.', array('@format' => $settings['format_type']));
+  }
+
+  return $summary;
 }

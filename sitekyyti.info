@@ -2,4 +2,6 @@ name = Site Kyyti
 description = Custom function for Kyyti site.
 core = 7.x
 
+dependencies[] = date
+
 files[] = sitekyyti.module
