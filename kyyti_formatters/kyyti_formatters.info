@@ -1,0 +1,7 @@
+name = Kyyti formatters
+description = Custom formatters for Kyyti site.
+core = 7.x
+
+dependencies[] = date
+
+files[] = kyyti_formatters.module

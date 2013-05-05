@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @file
+ * Site wide modification to Kyyti site.
+ *
+ * Last modified: 01.04.2012 Mika Hatakka
+ */
+
+/**
+ * Implements hook_help().
+ */
+function sitekyyti_help($path, $arg) {
+  if ($path == 'admin/help#sitekyyti') {
+    return check_markup(file_get_contents(dirname(__FILE__) . "/README.txt"));
+  }
+}
+
+/**
+ * Implemtents hook_menu().
+ */
+function sitekyyti_menu() {
+  $items = array();
+
+  $items['admin/config/system/kyyti'] = array(
+    'title' => 'Kyyti site',
+    'description' => 'Kyyti site specific settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sitekyyti_admin'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'sitekyyti.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_article_node_form_alter().
+ */
+function sitekyyti_form_article_node_form_alter(&$form) {
+  $form['scheduler_settings']['#weight'] = '-10';
+}
+
+/**
+ * Implements hook_form_tapahtuma_node_form_alter().
+ */
+function sitekyyti_form_tapahtuma_node_form_alter(&$form) {
+  $form['scheduler_settings']['#weight'] = '-10';
+}
+
+/**
+ * Hide Title and Content from first page.
+ */
+function sitekyyti_process_page(&$variables) {
+  if (drupal_is_front_page() && variable_get('kyyti_hide_firstpage_content', FALSE)) {
+    $variables['title'] = '';
+    if (isset($variables['page']['content']['system_main']['default_message'])) {
+      // Bartik
+      $variables['page']['content']['system_main']['default_message'] = '';
+    }
+    elseif (isset($variables['page']['content']['content']['content']['system_main']['default_message'])) {
+      // Omega
+      $variables['page']['content']['content']['content']['system_main']['default_message'] = '';
+    }
+  }
+}

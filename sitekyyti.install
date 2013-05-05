@@ -1,0 +1,16 @@
+<?php
+/**
+ * @file
+ * Site Kyyti specific installation rutines.
+ *
+ * Last modified: 14.03.2013 Mika Hatakka
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function sitekyyti_uninstall() {
+  // Remove tables.
+  variable_del('kyyti_hide_firstpage_content');
+  variable_del('kyyti_cul_add');
+}

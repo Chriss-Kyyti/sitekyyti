@@ -1,0 +1,160 @@
+<?php
+
+/**
+ * @file 
+ * Date handling for Kyyti first page event calendar.
+ * Converts long period events starting date today
+ * date to show in listing.Site wide modification to Kyyti site.
+ *
+ * Last modified: 01.04.2012 Mika Hatakka
+ */
+
+/**
+ * Implements hook_help().
+ */
+function kyyti_formatters_help($path, $arg) {
+  if ($path == 'admin/help#kyyti_formatters') {
+    return check_markup(file_get_contents(dirname(__FILE__) . "/README.txt"));
+  }
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function kyyti_formatters_field_formatter_info() {
+  return array(
+    'kyyti_event_cal' => array(
+      'label' => t('Kyyti Event calandar'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'settings' => array(
+        'format_type' => 'long',
+      ),
+    ),
+    'kyyti_abako' => array(
+      'label' => t('Date and time to Abako'),
+      'field types' => array('date', 'datestamp', 'datetime'),
+      'settings' => array(
+        'format_type' => 'long',
+        'fromto' => 'both',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function kyyti_formatters_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  if ($display['type'] == 'kyyti_event_cal') {
+    foreach ($items as $delta => $item) {
+//      module_load_include('inc', 'date', 'date_admin');
+      $format = date_format_type_format($settings['format_type']);
+      $ev_date = strtotime($item['value']);
+      if ($ev_date < time()) {
+        $ev_date = strtotime(date('Y-m-d') . " 00:00:00");
+      }
+      $tz = date('Z', $ev_date);
+      $element[$delta] = array(
+        '#markup' => t('!date', array(
+          '!date' => date($format, $ev_date + $tz)
+        ))
+      );
+    }
+  }
+  else if ($display['type'] == 'kyyti_abako') {
+    foreach ($items as $delta => $item) {
+//      module_load_include('inc', 'date', 'date_admin');
+      $format = date_format_type_format($settings['format_type']);
+      $date_str = '';
+      if ($settings['fromto'] == 'value' || $settings['fromto'] == 'both') {
+        $ev_date = strtotime($item['value']);
+        $tz = date('Z', $ev_date);
+        $date_str .= date($format, $ev_date + $tz);
+      }
+      if ($settings['fromto'] == 'both') {
+        $date_str .= ' - ';
+      }
+      if ($settings['fromto'] == 'value2' || $settings['fromto'] == 'both') {
+        $ev_date = strtotime($item['value2']);
+        $tz = date('Z', $ev_date);
+        $date_str .= date($format, $ev_date + $tz);
+      }
+      $element[$delta] = array(
+        '#markup' => t('!date', array(
+          '!date' => $date_str
+        ))
+      );
+    }
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function kyyti_formatters_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $form = array();
+
+  if ($display['type'] == 'kyyti_event_cal' || $display['type'] == 'kyyti_abako') {
+    module_load_include('inc', 'date', 'date_admin');
+    $form['format_type'] = array(
+      '#title' => t('Choose how users view dates and times:'),
+      '#type' => 'select',
+      '#options' => date_format_type_options(),
+      '#default_value' => $settings['format_type'],
+      '#description' => t('To add or edit options, visit <a href="@date-time-page">Date and time settings</a>.', array('@date-time-page' => url('admin/config/regional/date-time'))),
+      '#weight' => 0,
+    );
+  }
+  if ($display['type'] == 'kyyti_abako') {
+    $form['fromto'] = array(
+      '#title' => t('Display:'),
+      '#type' => 'select',
+      '#options' => array(
+        'both' => t('Both Start and End dates'),
+        'value' => t('Start date only'),
+        'value2' => t('End date only'),
+      ),
+      '#access' => $field['settings']['todate'],
+      '#default_value' => $settings['fromto'],
+      '#weight' => 1,
+    );
+  }
+
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'view_mode' => $view_mode,
+  );
+  drupal_alter('date_field_formatter_settings_form', $form, $form_state, $context);
+  return $form;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function kyyti_formatters_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = t('Show dates using the format: @format.', array('@format' => $settings['format_type']));
+
+  if ($display['type'] == 'kyyti_abako') {
+    if (array_key_exists('fromto', $settings) && $field['settings']['todate']) {
+      $options = array(
+        'both' => t('Display both Start and End dates'),
+        'value' => t('Display Start date only'),
+        'value2' => t('Display End date only'),
+      );
+
+      $summary .= '<br />' . $options[$settings['fromto']];
+    }
+  }
+  return $summary;
+}
