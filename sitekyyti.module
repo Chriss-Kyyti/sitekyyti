@@ -49,6 +49,13 @@ function sitekyyti_form_tapahtuma_node_form_alter(&$form) {
 }
 
 /**
+ * Implements hook_form_tapahtuma_node_form_alter().
+ */
+function sitekyyti_form_tiedote_node_form_alter(&$form) {
+  $form['scheduler_settings']['#weight'] = '-10';
+}
+
+/**
  * Hide Title and Content from first page.
  */
 function sitekyyti_process_page(&$variables) {
