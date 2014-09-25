@@ -58,7 +58,7 @@ function sitekyyti_form_tiedote_node_form_alter(&$form) {
 /**
  * Hide version control form from anonymous users at vinkit
  */
-function sitekyyti_form_vinkit__node_form_alter(&$form) {
+function sitekyyti_form_vinkki_node_form_alter(&$form) {
   if(user_is_anonymous()) {
     $form['revision_information']['#access'] = false;
   }
