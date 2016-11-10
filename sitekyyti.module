@@ -3,8 +3,6 @@
 /**
  * @file
  * Site wide modification to Kyyti site.
- *
- * Last modified: 01.04.2012 Mika Hatakka
  */
 
 /**
@@ -56,11 +54,11 @@ function sitekyyti_form_tiedote_node_form_alter(&$form) {
 }
 
 /**
- * Hide version control form from anonymous users at vinkit
+ * Hide version control form from anonymous users at vinkit.
  */
 function sitekyyti_form_vinkki_node_form_alter(&$form) {
-  if(user_is_anonymous()) {
-    $form['revision_information']['#access'] = false;
+  if (user_is_anonymous()) {
+    $form['revision_information']['#access'] = FALSE;
   }
 }
 
@@ -71,12 +69,28 @@ function sitekyyti_process_page(&$variables) {
   if (drupal_is_front_page() && variable_get('kyyti_hide_firstpage_content', FALSE)) {
     $variables['title'] = '';
     if (isset($variables['page']['content']['system_main']['default_message'])) {
-      // Bartik
+      // Bartik.
       $variables['page']['content']['system_main']['default_message'] = '';
     }
     elseif (isset($variables['page']['content']['content']['content']['system_main']['default_message'])) {
-      // Omega
+      // Omega.
       $variables['page']['content']['content']['content']['system_main']['default_message'] = '';
+    }
+  }
+}
+
+/**
+ * Implements hook_event_connector_term_alter().
+ */
+function sitekyyti_event_connector_term_alter($field, $tid, &$value) {
+  if ($field == 'field_paikkakunta') {
+    $myvoc = taxonomy_vocabulary_machine_name_load('paikkakunnat');
+    $tree = taxonomy_get_tree($myvoc->vid, 0, NULL, TRUE);
+    foreach ($tree as $term) {
+      if ($term->name == $value &&
+          isset($term->field_api_event_calendar_id[LANGUAGE_NONE][0]['value'])) {
+        $value = $term->field_api_event_calendar_id[LANGUAGE_NONE][0]['value'];
+      }
     }
   }
 }
